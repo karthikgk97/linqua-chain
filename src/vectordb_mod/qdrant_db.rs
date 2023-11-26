@@ -136,7 +136,6 @@ impl BaseVectorDBTrait for QdrantDBStruct{
         log::info!("Search output is {:?}", search_output);
         return search_output;
     }
-    
 }
 
 impl QdrantDBStruct{
@@ -163,7 +162,7 @@ impl QdrantDBStruct{
         return PointStruct::new(id_num, embeddings_data, payload_data);
     }
 
-    pub fn convert_to_pointstruct(embeddings_model: &FastEmbedStruct, doc_to_pointstruct: Vec<String>, id_for_pointstruct: Vec<u64>, metadata_for_pointstruct: Vec<HashMap<String, String>> ) -> Vec<PointStruct>{
+    fn convert_to_pointstruct(embeddings_model: &FastEmbedStruct, doc_to_pointstruct: Vec<String>, id_for_pointstruct: Vec<u64>, metadata_for_pointstruct: Vec<HashMap<String, String>> ) -> Vec<PointStruct>{
         let mut tmp_vector_store: Vec<PointStruct> = Vec::new();
         for doc_idx in 0..doc_to_pointstruct.len(){
             let embeddings_data = &embeddings_model.embed_stuff(vec![doc_to_pointstruct[doc_idx].clone()])[0];

@@ -1,18 +1,12 @@
 use env_logger::Builder;
-// use qdrant_client::qdrant::PointStruct;
-// use serde_json::json;
-// use qdrant_client::prelude::Payload;
 use std::collections::HashMap;
 use maplit::hashmap;
 use linqua_chain::vectordb_mod::base_vectordb::BaseVectorDBTrait;
 use linqua_chain::vectordb_mod::qdrant_db::{QdrantDBStruct};
-// use crate::embeddings_mod::fast_embed::{FastEmbedStruct};
 
 #[tokio::main]
 async fn main() {
     Builder::new().filter_level(log::LevelFilter::Info).init();
-    // Builder::new().filter_level(log::LevelFilter::max()).init();
-    log::info!("Information message");
 
     let qdb_client = QdrantDBStruct::new(None, None);
     let _ = qdb_client.list_available_collections().await;
