@@ -6,6 +6,9 @@ use qdrant_client::qdrant::vectors_config::Config;
 use qdrant_client::qdrant::{
     PointId, PointStruct, Condition, CreateCollection, Filter, SearchPoints, VectorParams, VectorsConfig
 };
+
+use crate::embeddings_mod::fast_embed::{FastEmbedStruct};
+
 use std::collections::HashMap;
 
 pub struct QdrantDBStruct{
@@ -118,17 +121,17 @@ impl QdrantDBStruct{
         return Payload::new();
     }
 
-    pub fn create_payload_data(mut payload_to_add: Payload, payload_key: &str, payload_value: &str) -> Payload{
+    fn create_payload_data(mut payload_to_add: Payload, payload_key: &str, payload_value: &str) -> Payload{
         payload_to_add.insert(payload_key.to_string(), payload_value.to_string());
     
         return payload_to_add;
     }
 
-    pub fn create_point_struct(id_num: PointId, embeddings_data: Vec<f32>, payload_data:Payload) -> PointStruct{
+    fn create_point_struct(id_num: PointId, embeddings_data: Vec<f32>, payload_data:Payload) -> PointStruct{
         return PointStruct::new(id_num, embeddings_data, payload_data);
     }
 
-    pub fn create_query_filter(filter_condition: &str, filter_key: &str, filter_value: &str) -> Option<Filter>{
+    fn create_query_filter(filter_condition: &str, filter_key: &str, filter_value: &str) -> Option<Filter>{
         log::info!("Adding Filter for condition {}", filter_condition);
         match filter_condition{
             "all" => {
