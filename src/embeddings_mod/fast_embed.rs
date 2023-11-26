@@ -1,5 +1,4 @@
 use fastembed::{FlagEmbedding, InitOptions, EmbeddingModel, EmbeddingBase};
-use serde_json::json;
 use crate::embeddings_mod::base_embeddings::BaseEmbeddingsTrait;
 use std::collections::HashMap;
 

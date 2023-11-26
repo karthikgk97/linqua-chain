@@ -19,7 +19,8 @@ pub struct QdrantDBStruct{
 
 #[async_trait]
 impl BaseVectorDBTrait for QdrantDBStruct{
-    type VecDBDataType = Vec<PointStruct>;
+    // type VecDBDataType = Vec<PointStruct>;
+    type VecDBDataType = Vec<String>;
     type FilterDataType = Option<Filter>;
 
     fn new(vectordb_url: Option<&str>, embeddings_model_name: Option<&str>) -> Self{
@@ -89,20 +90,37 @@ impl BaseVectorDBTrait for QdrantDBStruct{
         }    
     }
 
-    async fn add_stuff_to_collection(&self, collection_name: &str, stuff_to_add : Self::VecDBDataType){
+    async fn add_stuff_to_collection(&self, collection_name: &str, stuff_to_add: Self::VecDBDataType, id_for_stuff: Vec<u64>, metadata_for_stuff: Vec<HashMap<String, String>>){
+        
+        if !(stuff_to_add.len() == id_for_stuff.len() && id_for_stuff.len() == metadata_for_stuff.len()) {
+            log::error!("Vectors should be of same length!");
+            return;
+        }
+
         log::info!("Adding data to collection {}", collection_name);
-        let add_to_collection_response = self.client.upsert_points_blocking(collection_name, stuff_to_add, None).await.unwrap();
+
+        let converted_vectors = QdrantDBStruct::convert_to_pointstruct(&self.embeddings_model, stuff_to_add, id_for_stuff, metadata_for_stuff);
+
+        let add_to_collection_response = self.client.upsert_points_blocking(collection_name, converted_vectors, None).await.unwrap();
 
         log::info!("Add stuff to collection {} response: {:?}", collection_name, add_to_collection_response.result);
            
         log::debug!("Qdrant's Time taken:: for adding stuff to collection {} is {}", collection_name, add_to_collection_response.time);
     }
 
-    async fn search_collection(&self, collection_name: &str, vec_to_search: Vec<f32>, search_filter: Self::FilterDataType, search_limit: u64) -> Vec<HashMap<String, f64>>{
+    async fn search_collection(&self, collection_name: &str, search_query: &str, search_filter: Option<HashMap<&str, &str>>, search_limit: u64) -> Vec<HashMap<String, f64>>{
+        
+        let vec_to_search = &self.embeddings_model.embed_stuff(vec![search_query.to_string()])[0];
+
+        let mut qdrant_filter = None;
+        if search_filter.is_some() {
+            qdrant_filter = QdrantDBStruct::create_query_filter("all", search_filter.unwrap());
+        }
+
         let search_result_response = self.client.search_points(&SearchPoints {
             collection_name: collection_name.to_string(),
-            vector: vec_to_search,
-            filter: search_filter,
+            vector: vec_to_search.clone(),
+            filter: qdrant_filter,
             limit: search_limit,
             with_payload: Some(true.into()),
             ..Default::default()
@@ -122,42 +140,61 @@ impl BaseVectorDBTrait for QdrantDBStruct{
 }
 
 impl QdrantDBStruct{
-    pub fn create_empty_payload() -> Payload{
+    fn create_empty_payload() -> Payload{
         return Payload::new();
     }
 
-    fn create_payload_data(mut payload_to_add: Payload, payload_key: &str, payload_value: &str) -> Payload{
+    fn add_to_existing_payload(mut payload_to_add: Payload, payload_key: &str, payload_value: &str) -> Payload{
         payload_to_add.insert(payload_key.to_string(), payload_value.to_string());
     
         return payload_to_add;
+    }
+
+    fn create_payload_data(payload_map: HashMap<String, String>) -> Payload{
+        let mut tmp_payload = Self::create_empty_payload();
+        for (payload_key, payload_value) in payload_map.iter(){
+            tmp_payload.insert(payload_key.to_string(), payload_value.to_string());
+        }
+
+        return tmp_payload;
     }
 
     fn create_point_struct(id_num: PointId, embeddings_data: Vec<f32>, payload_data:Payload) -> PointStruct{
         return PointStruct::new(id_num, embeddings_data, payload_data);
     }
 
-    fn create_query_filter(filter_condition: &str, filter_key: &str, filter_value: &str) -> Option<Filter>{
-        log::info!("Adding Filter for condition {}", filter_condition);
-        match filter_condition{
+    pub fn convert_to_pointstruct(embeddings_model: &FastEmbedStruct, doc_to_pointstruct: Vec<String>, id_for_pointstruct: Vec<u64>, metadata_for_pointstruct: Vec<HashMap<String, String>> ) -> Vec<PointStruct>{
+        let mut tmp_vector_store: Vec<PointStruct> = Vec::new();
+        for doc_idx in 0..doc_to_pointstruct.len(){
+            let embeddings_data = &embeddings_model.embed_stuff(vec![doc_to_pointstruct[doc_idx].clone()])[0];
+            let mut payload_data = Self::create_payload_data(metadata_for_pointstruct[doc_idx].clone());
+            // add document as payload
+            payload_data = Self::add_to_existing_payload(payload_data, "document_for_embeddings", &doc_to_pointstruct[doc_idx]);
+            let id_data = id_for_pointstruct[doc_idx];
+            tmp_vector_store.push(Self::create_point_struct(id_data.into(), embeddings_data.clone(), payload_data));
+        }
+        return tmp_vector_store;
+    }
+
+    fn create_qdrant_condition(condition_key: &str, condition_value: &str) -> Condition{
+        return Condition::matches(condition_key, condition_value.to_string());
+    }
+
+    fn create_query_filter(filter_type: &str, filter_conditions: HashMap<&str, &str>) -> Option<Filter>{
+        log::info!("Adding Filter for condition {:?}", filter_conditions);
+
+        let mut conditions: Vec<Condition> =  Vec::new();
+
+        for (condition_key, condition_value) in filter_conditions.iter(){
+            conditions.push(Self::create_qdrant_condition(condition_key, condition_value));
+        }
+
+        match filter_type{
             "all" => {
-                return Some(Filter::all(
-                    [
-                        Condition::matches(
-                            filter_key,
-                            filter_value.to_string()
-                        )
-                    ]
-                ))
+                return Some(Filter::all(conditions))
             },
             "any" => {
-                return Some(Filter::any(
-                    [
-                        Condition::matches(
-                            filter_key,
-                            filter_value.to_string()
-                        )
-                    ]
-                ))
+                return Some(Filter::any(conditions))
             },
             _ => {
                 log::error!("Filter condition not found. Choose either any or all");
@@ -167,5 +204,4 @@ impl QdrantDBStruct{
         
     }
 
-    // fn 
 }

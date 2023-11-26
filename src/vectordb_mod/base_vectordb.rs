@@ -21,8 +21,9 @@ pub trait BaseVectorDBTrait{
     async fn create_collection(&self, collection_name: &str);
 
     // function for adding data to a collection
-    async fn add_stuff_to_collection(&self, collection_name: &str, stuff_to_add: Self::VecDBDataType);
+    // async fn add_stuff_to_collection(&self, collection_name: &str, stuff_to_add: Self::VecDBDataType);
+    async fn add_stuff_to_collection(&self, collection_name: &str, stuff_to_add: Self::VecDBDataType, id_for_stuff: Vec<u64>, filter_for_stuff: Vec<HashMap<String, String>>);
 
     // function for querying a collection
-    async fn search_collection(&self, collection_name: &str, vec_to_query: Vec<f32>, query_filter: Self::FilterDataType, search_limit: u64) -> Vec<HashMap<String, f64>>;
+    async fn search_collection(&self, collection_name: &str, search_query: &str, search_filter: Option<HashMap<&str, &str>>, search_limit: u64) -> Vec<HashMap<String, f64>>;
 }
