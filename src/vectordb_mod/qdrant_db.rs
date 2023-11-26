@@ -1,5 +1,6 @@
 use qdrant_client::client::QdrantClient;
 use crate::vectordb_mod::base_vectordb::BaseVectorDBTrait;
+use crate::embeddings_mod::base_embeddings::BaseEmbeddingsTrait;
 use async_trait::async_trait;
 use qdrant_client::prelude::*;
 use qdrant_client::qdrant::vectors_config::Config;
@@ -13,6 +14,7 @@ use std::collections::HashMap;
 
 pub struct QdrantDBStruct{
     client: QdrantClient,
+    pub embeddings_model: FastEmbedStruct
 }
 
 #[async_trait]
@@ -20,11 +22,13 @@ impl BaseVectorDBTrait for QdrantDBStruct{
     type VecDBDataType = Vec<PointStruct>;
     type FilterDataType = Option<Filter>;
 
-    fn new(vectordb_url: Option<&str>) -> Self{
+    fn new(vectordb_url: Option<&str>, embeddings_model_name: Option<&str>) -> Self{
         log::info!("Initializing new instance for QdrantDB");
         let default_qdrant_url = "http://localhost:6334".to_string();
+
         return QdrantDBStruct{
-            client: QdrantClient::from_url(vectordb_url.unwrap_or(&default_qdrant_url)).build().unwrap()
+            client: QdrantClient::from_url(vectordb_url.unwrap_or(&default_qdrant_url)).build().unwrap(),
+            embeddings_model: FastEmbedStruct::new(embeddings_model_name)
         };
     }
 
@@ -52,17 +56,18 @@ impl BaseVectorDBTrait for QdrantDBStruct{
         log::debug!("Qdrant's Time taken:: for deleting collection {} is {}", collection_to_delete, delete_collection_response.time);
     }
 
-    async fn create_collection(&self, collection_name: &str, vector_size: u64){
+    async fn create_collection(&self, collection_name: &str){
         if self.client.has_collection(collection_name).await.unwrap(){
             log::warn!("Collection name {} already exists!", collection_name);
         }
         else{
             log::info!("Creating collection {}", collection_name);
+            
             let create_collection_response = self.client.create_collection(&CreateCollection {
                 collection_name: collection_name.to_string(),
                 vectors_config: Some(VectorsConfig {
                     config: Some(Config::Params(VectorParams {
-                        size: vector_size,
+                        size: self.embeddings_model.get_current_model_size(),
                         distance: Distance::Cosine.into(),
                         ..Default::default()
                     })),
@@ -161,4 +166,6 @@ impl QdrantDBStruct{
         }
         
     }
+
+    // fn 
 }
