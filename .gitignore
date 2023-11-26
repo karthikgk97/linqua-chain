@@ -1,1 +1,4 @@
 /target
+
+# ignoring fast embed cache
+local_cache/
