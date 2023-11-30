@@ -9,6 +9,8 @@ pub struct PolarsDataStruct{
 }
 
 impl BaseRDBMSTrait for PolarsDataStruct{
+    type RDBMSDataType = DataFrame;
+
     fn new(csv_file_path: &str) -> Self{
         let dataframe_from_csv = CsvReader::from_path(csv_file_path).unwrap().finish().unwrap();
 
@@ -16,7 +18,6 @@ impl BaseRDBMSTrait for PolarsDataStruct{
             df: dataframe_from_csv
         }
     }
-
 
     fn get_column_names(&self) -> Vec<HashMap<String, String>> {
         log::info!("Retrieving Column Names for df");
@@ -30,7 +31,6 @@ impl BaseRDBMSTrait for PolarsDataStruct{
         return column_names_with_type;
     }
 
-
     fn get_distinct_options(&self, column_name: &str) -> Vec<String> {
         log::info!("Retrieving distinct options for column name {}", column_name);
         let unique_options = self.df.select([column_name.to_string()]).unwrap().unique(None, UniqueKeepStrategy::Any, None);
@@ -38,11 +38,12 @@ impl BaseRDBMSTrait for PolarsDataStruct{
         return unique_options.unwrap()[column_name].iter().map(|col| col.to_string()).collect();
     }
 
-
-    fn execute_sql_query(&self, sql_query_to_execute: &str) {
+    fn execute_sql_query(&self, sql_query_to_execute: &str) -> Self::RDBMSDataType{
         let mut ctx = SQLContext::new();
         ctx.register("df", self.df.clone().lazy());
         let sql_df = ctx.execute(sql_query_to_execute).unwrap().collect().unwrap();
         log::info!("SQL OP is {:?}", sql_df);
+
+        return sql_df;
     }
 }
