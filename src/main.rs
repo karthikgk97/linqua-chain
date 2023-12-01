@@ -1,25 +1,40 @@
 use env_logger::Builder;
-use std::collections::HashMap;
+// use std::collections::HashMap;
 // use maplit::hashmap;
 // use linqua_chain::vectordb_mod::base_vectordb::BaseVectorDBTrait;
 // use linqua_chain::vectordb_mod::qdrant_db::{QdrantDBStruct};
-use linqua_chain::rdbms_mod::base_rdbms::BaseRDBMSTrait;
-use linqua_chain::rdbms_mod::polars_data::PolarsDataStruct;
+// use linqua_chain::rdbms_mod::base_rdbms::BaseRDBMSTrait;
+// use linqua_chain::rdbms_mod::polars_data::PolarsDataStruct;
+use linqua_chain::llm_mod::base_llm::BaseLLMTrait;
+use linqua_chain::llm_mod::llama_llm::LlamaLLMStruct;
+
 
 #[tokio::main]
 async fn main() {
     Builder::new().filter_level(log::LevelFilter::Info).init();
 
-    let pds = PolarsDataStruct::new("/home/gk-ubuntu/Desktop/github_projects/linqua-chain/dummy_data.csv");
+    let mut lls = LlamaLLMStruct::new("http://localhost", None, true);
 
-    let pds_columns: Vec<HashMap<String, String>> = pds.get_column_names();
+    lls.set_temperature(0.0);
+    lls.set_max_output_length(200);
 
-    for col_idx in 0..pds_columns.len(){
-        let pds_dis = pds.get_distinct_options(&pds_columns[col_idx].keys().next().unwrap() );
-        log::info!("Pdx dis for column idx {} is {:?}", col_idx, pds_dis);
-    }
+    lls.chat("what is meaning of life").await;
 
-    pds.execute_sql_query("SELECT * FROM df");
+    lls.chat("Perform subtraction of 2 and 3 and give me the numerical output").await;
+
+    lls.chat("how about 1 and 2").await;
+
+
+    // let pds = PolarsDataStruct::new("/home/gk-ubuntu/Desktop/github_projects/linqua-chain/dummy_data.csv");
+
+    // let pds_columns: Vec<HashMap<String, String>> = pds.get_column_names();
+
+    // for col_idx in 0..pds_columns.len(){
+    //     let pds_dis = pds.get_distinct_options(&pds_columns[col_idx].keys().next().unwrap() );
+    //     log::info!("Pdx dis for column idx {} is {:?}", col_idx, pds_dis);
+    // }
+
+    // pds.execute_sql_query("SELECT * FROM df");
     
 
     // let qdb_client = QdrantDBStruct::new(None, None);
