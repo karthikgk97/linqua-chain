@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Karthik <karthik.gk97@gmail.com>"]
 
+[[bin]]
+name = "pre_process"
+path = "src/pre_process.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

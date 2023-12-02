@@ -9,31 +9,31 @@ use ollama_rs::{
 };
 use ollama_rs::generation::options::GenerationOptions;
 
-pub struct LlamaLLMStruct{
+pub struct OLlamaLLMStruct{
     llm_model: Ollama,
     model_name: String,
     system_prompt: String,
     previous_context: Option<GenerationContext>,
     pub track_history: bool,
-    llama_options: GenerationOptions
+    ollama_options: GenerationOptions
 }
 
 #[async_trait]
-impl BaseLLMTrait for LlamaLLMStruct{
+impl BaseLLMTrait for OLlamaLLMStruct{
 
     fn new(model_endpoint: &str, model_name: Option<&str>, track_history: bool) -> Self{
 
         let default_model_name = "llama2";
 
-        let llama_options = GenerationOptions::default();
+        let ollama_options = GenerationOptions::default();
 
-        return LlamaLLMStruct{
+        return OLlamaLLMStruct{
             llm_model: Ollama::new(model_endpoint.to_string(), 11434),
             model_name: model_name.unwrap_or(default_model_name).to_string(),
             system_prompt: "".to_string(),
             previous_context: None,
             track_history: track_history,
-            llama_options: llama_options
+            ollama_options: ollama_options
         };
     }
 
@@ -43,42 +43,42 @@ impl BaseLLMTrait for LlamaLLMStruct{
 
     fn set_temperature(&mut self, new_temperature: f32){
         log::info!("Setting temperature as {}", new_temperature);
-        self.llama_options = self.llama_options.clone().temperature(new_temperature);
+        self.ollama_options = self.ollama_options.clone().temperature(new_temperature);
     }
 
     fn set_top_p(&mut self, new_top_p: f32){
         log::info!("Setting top_p as {}", new_top_p);
-        self.llama_options = self.llama_options.clone().top_p(new_top_p);
+        self.ollama_options = self.ollama_options.clone().top_p(new_top_p);
     }
 
     fn set_top_k(&mut self, new_top_k: u32){
         log::info!("Setting top_k as {}", new_top_k);
-        self.llama_options = self.llama_options.clone().top_k(new_top_k);
+        self.ollama_options = self.ollama_options.clone().top_k(new_top_k);
     }
 
     fn set_max_output_length(&mut self, new_max_output_length: i32){
         log::info!("Setting num_predict as {}", new_max_output_length);
-        self.llama_options = self.llama_options.clone().num_predict(new_max_output_length);
+        self.ollama_options = self.ollama_options.clone().num_predict(new_max_output_length);
     }
 
     async fn chat(&mut self, user_question: &str){
 
         let user_prompt = format!("[INST] + {} + [/INST]", user_question).to_string();
-        let mut llama_generate_request = GenerationRequest::new(self.model_name.clone(), user_prompt);
+        let mut ollama_generate_request = GenerationRequest::new(self.model_name.clone(), user_prompt);
 
         // setting the previous history as context
         if self.previous_context.is_some(){
-            llama_generate_request = llama_generate_request.clone().context(self.previous_context.clone().unwrap());
+            ollama_generate_request = ollama_generate_request.clone().context(self.previous_context.clone().unwrap());
         }
         // setting the system message
-        llama_generate_request = llama_generate_request.clone().system(self.system_prompt.clone());
+        ollama_generate_request = ollama_generate_request.clone().system(self.system_prompt.clone());
 
         // setting options
-        llama_generate_request = llama_generate_request.clone().options(self.llama_options.clone());
+        ollama_generate_request = ollama_generate_request.clone().options(self.ollama_options.clone());
 
-        log::debug!("llama request is {:?}", llama_generate_request);
+        log::debug!("llama request is {:?}", ollama_generate_request);
 
-        let res = self.llm_model.generate(llama_generate_request.clone()).await;
+        let res = self.llm_model.generate(ollama_generate_request.clone()).await;
 
         if let Ok(res) = res {
             log::info!("LLM response: {}", res.response);

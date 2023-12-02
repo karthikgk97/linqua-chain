@@ -13,7 +13,7 @@ use linqua_chain::llm_mod::ollama_llm::OLlamaLLMStruct;
 async fn main() {
     Builder::new().filter_level(log::LevelFilter::Info).init();
 
-    let mut lls = OLlamaLLMStruct::new("http://localhost", None, true);
+    let mut lls = OLlamaLLMStruct::new("http://localhost", Some("mistral"), true);
 
     lls.set_temperature(0.7);
     lls.set_max_output_length(200);
@@ -37,7 +37,6 @@ async fn main() {
     lls.chat("employee with highest food expense").await;
     lls.chat("total pounds shipped for october").await;
     lls.chat("who spent the most on cars expense type").await;
-
 
 
     // let pds = PolarsDataStruct::new("/home/gk-ubuntu/Desktop/github_projects/linqua-chain/dummy_data.csv");

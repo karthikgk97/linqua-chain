@@ -15,7 +15,7 @@ pub mod rdbms_mod {
 
 pub mod llm_mod {
     pub mod base_llm;
-    pub mod llama_llm;
+    pub mod ollama_llm;
 }
 
 pub mod crate_utils;
