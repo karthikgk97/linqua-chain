@@ -6,14 +6,14 @@ use env_logger::Builder;
 // use linqua_chain::rdbms_mod::base_rdbms::BaseRDBMSTrait;
 // use linqua_chain::rdbms_mod::polars_data::PolarsDataStruct;
 use linqua_chain::llm_mod::base_llm::BaseLLMTrait;
-use linqua_chain::llm_mod::ollama_llm::OLlamaLLMStruct;
+use linqua_chain::llm_mod::ollama_llm::OllamaLLMStruct;
 
 
 #[tokio::main]
 async fn main() {
     Builder::new().filter_level(log::LevelFilter::Info).init();
 
-    let mut lls = OLlamaLLMStruct::new("http://localhost", Some("mistral"), true);
+    let mut lls = OllamaLLMStruct::new("http://localhost", Some("mistral"), true);
 
     lls.set_temperature(0.7);
     lls.set_max_output_length(200);
@@ -25,12 +25,7 @@ async fn main() {
     let available_columns: Vec<&str> = vec!["expense_type", "employer_name", "calendar_date", "vendor", "record_id", "approved_amount", "shipped_pounds", "business_group", "organization"];
 
     let system_pt = 
-    format!("You are an expert systems assistant. You'll be given the available columns as a list: {:?}.
-    Your job is to identify all the possible closest columns from the given available columns list for the given user input question.
-    Output should be a list of closest columns that are relevant to the given user input question.
-    There should not be any explanation to the output other than just a list of identified column names.
-    Understand the question, try to get the semantic meaning of what it means.
-    Then find the relevant columns according to it.", available_columns);
+    format!("", available_columns);
     
     lls.set_system_prompt(&system_pt);
 

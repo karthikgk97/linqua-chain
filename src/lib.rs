@@ -18,4 +18,8 @@ pub mod llm_mod {
     pub mod ollama_llm;
 }
 
+pub mod structured_data {
+    pub mod ccm;
+}
+
 pub mod crate_utils;

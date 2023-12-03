@@ -9,7 +9,7 @@ use ollama_rs::{
 };
 use ollama_rs::generation::options::GenerationOptions;
 
-pub struct OLlamaLLMStruct{
+pub struct OllamaLLMStruct{
     llm_model: Ollama,
     model_name: String,
     system_prompt: String,
@@ -19,7 +19,7 @@ pub struct OLlamaLLMStruct{
 }
 
 #[async_trait]
-impl BaseLLMTrait for OLlamaLLMStruct{
+impl BaseLLMTrait for OllamaLLMStruct{
 
     fn new(model_endpoint: &str, model_name: Option<&str>, track_history: bool) -> Self{
 
@@ -27,7 +27,7 @@ impl BaseLLMTrait for OLlamaLLMStruct{
 
         let ollama_options = GenerationOptions::default();
 
-        return OLlamaLLMStruct{
+        return OllamaLLMStruct{
             llm_model: Ollama::new(model_endpoint.to_string(), 11434),
             model_name: model_name.unwrap_or(default_model_name).to_string(),
             system_prompt: "".to_string(),
@@ -61,10 +61,9 @@ impl BaseLLMTrait for OLlamaLLMStruct{
         self.ollama_options = self.ollama_options.clone().num_predict(new_max_output_length);
     }
 
-    async fn chat(&mut self, user_question: &str){
+    async fn chat(&mut self, user_prompt: &str) -> String{
 
-        let user_prompt = format!("[INST] + {} + [/INST]", user_question).to_string();
-        let mut ollama_generate_request = GenerationRequest::new(self.model_name.clone(), user_prompt);
+        let mut ollama_generate_request = GenerationRequest::new(self.model_name.clone(), user_prompt.to_string());
 
         // setting the previous history as context
         if self.previous_context.is_some(){
@@ -83,16 +82,23 @@ impl BaseLLMTrait for OLlamaLLMStruct{
         if let Ok(res) = res {
             log::info!("LLM response: {}", res.response);
             if let Some(final_data) = res.final_data{
-                log::debug!("LLM eval duration for question {}: {}", user_question, final_data.eval_duration);
+                log::debug!("LLM eval duration for user prompt {}: {}", user_prompt, final_data.eval_duration);
 
                 if self.track_history{
                     self.previous_context = Some(final_data.context);
                 }
             }
+            return res.response;
         }
         else{
             log::error!("Chat api call failed!");
-        }
+            return "Chat Error!".to_string();
+        } 
+    }
+
+
+    fn clear_chat(&mut self){
+        self.previous_context = None
     }
 }
 

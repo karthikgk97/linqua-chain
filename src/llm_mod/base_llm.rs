@@ -10,5 +10,6 @@ pub trait BaseLLMTrait {
     fn set_top_p(&mut self, new_top_p: f32);
     fn set_top_k(&mut self, new_top_k: u32);
     fn set_max_output_length(&mut self, new_max_output_length: i32);
-    async fn chat(&mut self, user_question: &str);
+    async fn chat(&mut self, user_prompt: &str) -> String;
+    fn clear_chat(&mut self); 
 }

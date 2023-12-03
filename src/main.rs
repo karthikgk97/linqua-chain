@@ -1,48 +1,43 @@
 use env_logger::Builder;
-// use std::collections::HashMap;
-// use maplit::hashmap;
-// use linqua_chain::vectordb_mod::base_vectordb::BaseVectorDBTrait;
-// use linqua_chain::vectordb_mod::qdrant_db::{QdrantDBStruct};
-// use linqua_chain::rdbms_mod::base_rdbms::BaseRDBMSTrait;
-// use linqua_chain::rdbms_mod::polars_data::PolarsDataStruct;
+use std::collections::HashMap;
+
+use linqua_chain::rdbms_mod::base_rdbms::BaseRDBMSTrait;
+use linqua_chain::rdbms_mod::polars_data::PolarsDataStruct;
 use linqua_chain::llm_mod::base_llm::BaseLLMTrait;
-use linqua_chain::llm_mod::ollama_llm::OLlamaLLMStruct;
+use linqua_chain::structured_data::ccm::CCMStruct;
 
 
 #[tokio::main]
 async fn main() {
     Builder::new().filter_level(log::LevelFilter::Info).init();
 
-    let mut lls = OLlamaLLMStruct::new("http://localhost", None, true);
+    let pds = PolarsDataStruct::new("./auto_sales_test.csv");
+    let pds_columns: HashMap<String, String> = pds.get_column_names();
 
-    lls.set_temperature(0.7);
-    lls.set_max_output_length(200);
-    lls.set_top_k(40);
-    lls.set_top_p(0.1);
+    log::info!("Available columns is {:?}", pds_columns);
 
+    let mut ccm = CCMStruct::new("http://localhost", Some("mistral"), true);
 
+    ccm.set_temperature(0.7);
+    ccm.set_max_output_length(200);
 
-    let available_columns: Vec<&str> = vec!["expense_type", "employer_name", "calendar_date", "vendor", "record_id", "approved_amount", "shipped_pounds", "business_group", "organization"];
+    let available_columns: Vec<String> = pds_columns.into_keys().collect();
 
-    let system_pt = 
-    format!("You are an expert systems assistant. You'll be given the available columns as a list: {:?}.
-    Your job is to identify all the possible closest columns from the given available columns list for the given user input question.
-    Output should be a list of closest columns that are relevant to the given user input question.
-    There should not be any explanation to the output other than just a list of identified column names.
-    Understand the question, try to get the semantic meaning of what it means.
-    Then find the relevant columns according to it.", available_columns);
+    let default_system_message = ccm.get_default_system_message(available_columns);
     
-    lls.set_system_prompt(&system_pt);
+    ccm.set_system_prompt(&default_system_message);
 
-    lls.chat("employee with highest food expense").await;
-    lls.chat("total pounds shipped for october").await;
-    lls.chat("who spent the most on cars expense type").await;
+    let chat_op = ccm.chat("price for customer Jack Hogan").await;
+    let ccm_chat_op_list = ccm.string_to_list(chat_op);
+    log::info!("CCM Chat list OP {:?}", ccm_chat_op_list);
+
+    
 
 
 
-    // let pds = PolarsDataStruct::new("/home/gk-ubuntu/Desktop/github_projects/linqua-chain/dummy_data.csv");
+    // 
 
-    // let pds_columns: Vec<HashMap<String, String>> = pds.get_column_names();
+    // 
 
     // for col_idx in 0..pds_columns.len(){
     //     let pds_dis = pds.get_distinct_options(&pds_columns[col_idx].keys().next().unwrap() );
@@ -52,7 +47,7 @@ async fn main() {
     // pds.execute_sql_query("SELECT * FROM df");
     
 
-    // let qdb_client = QdrantDBStruct::new(None, None);
+    // 
     // let _ = qdb_client.list_available_collections().await;
 
     // let _ = qdb_client.delete_collection("test_collection").await;

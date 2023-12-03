@@ -19,13 +19,14 @@ impl BaseRDBMSTrait for PolarsDataStruct{
         }
     }
 
-    fn get_column_names(&self) -> Vec<HashMap<String, String>> {
+    fn get_column_names(&self) -> HashMap<String, String> {
         log::info!("Retrieving Column Names for df");
-        let column_names_with_type: Vec<HashMap<String, String>> = self.df.get_column_names().iter().map(|col| {
-            let mut tmp_hashmap = HashMap::new();
+        let column_names_with_type: HashMap<String, String> = self.df.get_column_names().iter().map(|col| {
+            // let mut tmp_hashmap = HashMap::new();
             let col_data_type = self.df.column(col).unwrap().dtype().to_string();
-            tmp_hashmap.insert(col.to_string(), col_data_type);
-            tmp_hashmap
+            return (col.to_string(), col_data_type);
+            // tmp_hashmap.insert(col.to_string(), col_data_type);
+            // tmp_hashmap
         }).collect();
     
         return column_names_with_type;
