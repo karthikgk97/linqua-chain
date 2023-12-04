@@ -14,7 +14,7 @@ impl BaseVectorDBTrait for CDOMStruct{
 
     fn new(vectordb_url: Option<&str>, embeddings_model_name: Option<&str>) -> Self{
         return CDOMStruct{
-            qdrantdb_instance: QdrantDBStruct::new(None, None)
+            qdrantdb_instance: QdrantDBStruct::new(vectordb_url, embeddings_model_name)
         };
     }
 
@@ -39,7 +39,7 @@ impl BaseVectorDBTrait for CDOMStruct{
     }
 
     // function for querying a collection
-    async fn search_collection(&self, collection_name: &str, search_query: &str, search_filter: Option<HashMap<&str, &str>>, search_limit: u64) -> Vec<HashMap<String, f64>>{
+    async fn search_collection(&self, collection_name: &str, search_query: &str, search_filter: Option<HashMap<&str, &str>>, search_limit: u64) -> HashMap<String, f64>{
         return self.qdrantdb_instance.search_collection(collection_name, search_query, search_filter, search_limit).await;
     }
 }

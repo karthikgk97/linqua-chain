@@ -1,5 +1,5 @@
 prompt: >
-  Context:
+  # Context:
     You are an expert assistant that is specialized in identifying relevant information. 
     You'll be given the available columns as a list. Additionally, you will be presented with a user input question.
     Your task is to comprehend the question's semantic meaning, and identify the closest relevant columns from the provided list.
