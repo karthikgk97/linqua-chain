@@ -7,6 +7,9 @@ use qdrant_client::qdrant::vectors_config::Config;
 use qdrant_client::qdrant::{
     PointId, PointStruct, Condition, CreateCollection, Filter, SearchPoints, VectorParams, VectorsConfig
 };
+use maplit::hashmap;
+use uuid::Uuid;
+// use sha256::{digest}
 
 use crate::embeddings_mod::fast_embed::{FastEmbedStruct};
 
@@ -21,7 +24,6 @@ pub struct QdrantDBStruct{
 impl BaseVectorDBTrait for QdrantDBStruct{
     // type VecDBDataType = Vec<PointStruct>;
     type VecDBDataType = Vec<String>;
-    type FilterDataType = Option<Filter>;
 
     fn new(vectordb_url: Option<&str>, embeddings_model_name: Option<&str>) -> Self{
         log::info!("Initializing new instance for QdrantDB");
@@ -90,7 +92,7 @@ impl BaseVectorDBTrait for QdrantDBStruct{
         }    
     }
 
-    async fn add_stuff_to_collection(&self, collection_name: &str, stuff_to_add: Self::VecDBDataType, id_for_stuff: Vec<u64>, metadata_for_stuff: Vec<HashMap<String, String>>){
+    async fn add_stuff_to_collection(&self, collection_name: &str, stuff_to_add: Self::VecDBDataType, id_for_stuff: Vec<Uuid>, metadata_for_stuff: Vec<HashMap<String, String>>){
         
         if !(stuff_to_add.len() == id_for_stuff.len() && id_for_stuff.len() == metadata_for_stuff.len()) {
             log::error!("Vectors should be of same length!");
@@ -100,9 +102,7 @@ impl BaseVectorDBTrait for QdrantDBStruct{
         log::info!("Adding data to collection {}", collection_name);
 
         let converted_vectors = QdrantDBStruct::convert_to_pointstruct(&self.embeddings_model, stuff_to_add, id_for_stuff, metadata_for_stuff);
-
-        let add_to_collection_response = self.client.upsert_points_blocking(collection_name, converted_vectors, None).await.unwrap();
-
+        let add_to_collection_response = self.client.upsert_points_batch_blocking(collection_name, converted_vectors, None, 100).await.unwrap();
         log::info!("Add stuff to collection {} response: {:?}", collection_name, add_to_collection_response.result);
            
         log::debug!("Qdrant's Time taken:: for adding stuff to collection {} is {}", collection_name, add_to_collection_response.time);
@@ -158,11 +158,11 @@ impl QdrantDBStruct{
         return tmp_payload;
     }
 
-    fn create_point_struct(id_num: PointId, embeddings_data: Vec<f32>, payload_data:Payload) -> PointStruct{
-        return PointStruct::new(id_num, embeddings_data, payload_data);
+    fn create_point_struct(id_num: Uuid, embeddings_data: Vec<f32>, payload_data:Payload) -> PointStruct{
+        return PointStruct::new(id_num.to_string(), embeddings_data, payload_data);
     }
 
-    fn convert_to_pointstruct(embeddings_model: &FastEmbedStruct, doc_to_pointstruct: Vec<String>, id_for_pointstruct: Vec<u64>, metadata_for_pointstruct: Vec<HashMap<String, String>> ) -> Vec<PointStruct>{
+    fn convert_to_pointstruct(embeddings_model: &FastEmbedStruct, doc_to_pointstruct: Vec<String>, id_for_pointstruct: Vec<Uuid>, metadata_for_pointstruct: Vec<HashMap<String, String>> ) -> Vec<PointStruct>{
         let mut tmp_vector_store: Vec<PointStruct> = Vec::new();
         for doc_idx in 0..doc_to_pointstruct.len(){
             let embeddings_data = &embeddings_model.embed_stuff(vec![doc_to_pointstruct[doc_idx].clone()])[0];
@@ -201,6 +201,16 @@ impl QdrantDBStruct{
             }
         }
         
+    }
+
+    pub fn create_ids(text_vec_for_uuid: Vec<String>) -> Vec<Uuid>{
+
+        let uuid_list: Vec<Uuid> = text_vec_for_uuid.iter().map(|x| {
+            let uuid = Uuid::new_v5(&Uuid::NAMESPACE_DNS, x.as_bytes());
+            return uuid;
+        }).collect();
+
+        return uuid_list;
     }
 
 }

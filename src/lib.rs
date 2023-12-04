@@ -13,4 +13,14 @@ pub mod rdbms_mod {
     pub mod polars_data;
 }
 
+pub mod llm_mod {
+    pub mod base_llm;
+    pub mod ollama_llm;
+}
+
+pub mod structured_data {
+    pub mod ccm;
+    pub mod cdom;
+}
+
 pub mod crate_utils;

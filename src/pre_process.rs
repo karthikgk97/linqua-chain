@@ -1,12 +1,14 @@
 use env_logger::Builder;
 use std::collections::HashMap;
 use maplit::hashmap;
+
 use linqua_chain::rdbms_mod::base_rdbms::BaseRDBMSTrait;
 use linqua_chain::rdbms_mod::polars_data::PolarsDataStruct;
 use linqua_chain::llm_mod::base_llm::BaseLLMTrait;
 use linqua_chain::structured_data::ccm::CCMStruct;
 use linqua_chain::structured_data::cdom::CDOMStruct;
 use linqua_chain::vectordb_mod::base_vectordb::BaseVectorDBTrait;
+use linqua_chain::vectordb_mod::qdrant_db::QdrantDBStruct;
 
 
 #[tokio::main]
@@ -31,27 +33,32 @@ async fn main() {
     
     ccm.set_system_prompt(&default_system_message);
 
-    let user_input_question = "Sale price for Address line 'Pacific Hwy' for Customer Name Corrida";
-
-    let chat_op = ccm.chat(user_input_question).await;
+    let chat_op = ccm.chat("price for customer Jack Hogan").await;
     let ccm_chat_op_list = ccm.string_to_list(chat_op);
     log::info!("CCM Chat list OP {:?}", ccm_chat_op_list);
 
 
 
     let cdom = CDOMStruct::new(None, None);
-    // let _ = cdom.delete_collection("test_collection").await;
-    // let _ = cdom.create_collection("test_collection").await;
+    let cdom_collection_name = "auto_sales";
+    // deleting collection if any
+    let _ = cdom.delete_collection(cdom_collection_name).await;
+    let _ = cdom.create_collection(cdom_collection_name).await;
 
     
-    for col_name in ccm_chat_op_list.iter(){
-        let filter = hashmap!{"column_name" => col_name.as_str()};
-        cdom.search_collection(
-            "auto_sales",
-            user_input_question,
-            Some(filter),
-            10
-        ).await;
+    for col_name in pds_columns.clone().into_keys(){
+        let col_name_str: &str = &col_name; // Convert String to &str
+        if ["ORDERNUMBER", "PRICEEACH", "QUANTITYORDERED", "MSRP", "DAYS_SINCE_LASTORDER", "ORDERLINENUMBER", "SALES"].contains(&col_name_str)
+        {
+            continue;
+        }
+        let pds_dis = pds.get_distinct_options(&col_name);
+        log::info!("Num of distinct options for column name {} is {}", col_name, pds_dis.len());
+
+        let id_for_stuff = QdrantDBStruct::create_ids(pds_dis.clone());
+        let metadata_for_stuff = vec![hashmap!{"column_name".to_string() => col_name.to_string()}; pds_dis.len()];
+
+        let _ = cdom.add_stuff_to_collection(cdom_collection_name, pds_dis, id_for_stuff, metadata_for_stuff).await;
     }
 
 

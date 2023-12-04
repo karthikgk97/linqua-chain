@@ -1,11 +1,11 @@
 
 use async_trait::async_trait;
 use std::collections::HashMap;
+use uuid::Uuid;
 
 #[async_trait]
 pub trait BaseVectorDBTrait{
     type VecDBDataType;
-    type FilterDataType;
 
     // function for setting up the client
     // fn setup_vectordb_client();
@@ -22,7 +22,7 @@ pub trait BaseVectorDBTrait{
 
     // function for adding data to a collection
     // async fn add_stuff_to_collection(&self, collection_name: &str, stuff_to_add: Self::VecDBDataType);
-    async fn add_stuff_to_collection(&self, collection_name: &str, stuff_to_add: Self::VecDBDataType, id_for_stuff: Vec<u64>, filter_for_stuff: Vec<HashMap<String, String>>);
+    async fn add_stuff_to_collection(&self, collection_name: &str, stuff_to_add: Self::VecDBDataType, id_for_stuff: Vec<Uuid>, filter_for_stuff: Vec<HashMap<String, String>>);
 
     // function for querying a collection
     async fn search_collection(&self, collection_name: &str, search_query: &str, search_filter: Option<HashMap<&str, &str>>, search_limit: u64) -> Vec<HashMap<String, f64>>;
