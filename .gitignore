@@ -2,3 +2,6 @@
 
 # ignoring fast embed cache
 local_cache/
+
+# ignoring csv lock
+.~lock.auto_sales_test.csv#

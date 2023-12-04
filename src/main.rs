@@ -1,10 +1,12 @@
 use env_logger::Builder;
 use std::collections::HashMap;
-
+use maplit::hashmap;
 use linqua_chain::rdbms_mod::base_rdbms::BaseRDBMSTrait;
 use linqua_chain::rdbms_mod::polars_data::PolarsDataStruct;
 use linqua_chain::llm_mod::base_llm::BaseLLMTrait;
 use linqua_chain::structured_data::ccm::CCMStruct;
+use linqua_chain::structured_data::cdom::CDOMStruct;
+use linqua_chain::vectordb_mod::base_vectordb::BaseVectorDBTrait;
 
 
 #[tokio::main]
@@ -16,41 +18,51 @@ async fn main() {
 
     log::info!("Available columns is {:?}", pds_columns);
 
-    let mut ccm = CCMStruct::new("http://localhost", Some("mistral"), true);
+    let mut ccm = CCMStruct::new("http://localhost", Some("llama2"), true);
 
     ccm.set_temperature(0.7);
     ccm.set_max_output_length(200);
 
-    let available_columns: Vec<String> = pds_columns.into_keys().collect();
+    let available_columns: Vec<String> = pds_columns.clone().into_keys().collect();
+
+    log::info!("Available columns is {:?}", available_columns);
 
     let default_system_message = ccm.get_default_system_message(available_columns);
     
     ccm.set_system_prompt(&default_system_message);
 
-    let chat_op = ccm.chat("price for customer Jack Hogan").await;
+    let user_input_question = "Sale price for Address line 'Pacific Hwy' for Customer Name Corrida";
+
+    let chat_op = ccm.chat(user_input_question).await;
     let ccm_chat_op_list = ccm.string_to_list(chat_op);
     log::info!("CCM Chat list OP {:?}", ccm_chat_op_list);
 
+
+
+    let cdom = CDOMStruct::new(None, None);
+    // let _ = cdom.delete_collection("test_collection").await;
+    // let _ = cdom.create_collection("test_collection").await;
+
     
-
+    for col_name in ccm_chat_op_list.iter(){
+        let filter = hashmap!{"column_name" => col_name.as_str()};
+        cdom.search_collection(
+            "auto_sales",
+            user_input_question,
+            Some(filter),
+            10
+        ).await;
+    }
 
 
     // 
 
     // 
 
-    // for col_idx in 0..pds_columns.len(){
-    //     let pds_dis = pds.get_distinct_options(&pds_columns[col_idx].keys().next().unwrap() );
-    //     log::info!("Pdx dis for column idx {} is {:?}", col_idx, pds_dis);
-    // }
+
 
     // pds.execute_sql_query("SELECT * FROM df");
     
-
-    // 
-    // let _ = qdb_client.list_available_collections().await;
-
-    // let _ = qdb_client.delete_collection("test_collection").await;
 
     // let _ = qdb_client.create_collection("test_collection").await;
     // let documents = vec![

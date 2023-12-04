@@ -26,3 +26,5 @@ polars-sql = "0.35.4"
 polars-lazy = "0.35.4"
 ollama-rs = "0.1.2"
 serde_yaml = "0.9.27"
+uuid = {version = "1.6.1", features = ["v5", "fast-rng"]}
+sha256 = "1.4.0"
