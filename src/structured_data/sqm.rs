@@ -45,6 +45,8 @@ impl BaseLLMTrait for SQMStruct{
     async fn chat(&mut self, user_prompt: &str) -> String {
         let mut chat_response = self.ollama_instance.chat(user_prompt).await;
         chat_response = chat_response.replace("[INST/LLM]", "");
+        chat_response = chat_response.replace("```sql", "");
+        chat_response = chat_response.replace("```", "");
         return chat_response;
     }
 
