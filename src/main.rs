@@ -20,7 +20,7 @@ async fn main() {
     log::info!("Available columns is {:?}", pds_columns);
 
     // let mut ccm = CCMStruct::new("http://localhost", Some("openhermes2.5-mistral:latest"), true);
-    let mut ccm = CCMStruct::new("http://localhost", Some("llama:latest"), true);
+    let mut ccm = CCMStruct::new("http://localhost", Some("mistral:latest"), true);
     
 
     let ollama = Ollama::new("http://localhost".to_string(), 11434);
@@ -73,7 +73,7 @@ async fn main() {
         // search_results_vec.push(tmp_hashmap);
     }
 
-    let mut sqm = SQMStruct::new("http://localhost", Some("codellama:latest"), true);
+    let mut sqm = SQMStruct::new("http://localhost", Some("mistral:latest"), true);
     sqm.set_temperature(0.7);
     sqm.set_max_output_length(200);
     
@@ -127,7 +127,7 @@ async fn main() {
         // search_results_vec.push(tmp_hashmap);
     }
 
-    let mut sqm = SQMStruct::new("http://localhost", Some("codellama:latest"), true);
+    let mut sqm = SQMStruct::new("http://localhost", Some("mistral:latest"), true);
     sqm.set_temperature(0.7);
     sqm.set_max_output_length(200);
     

@@ -125,9 +125,6 @@ impl BaseVectorDBTrait for QdrantDBStruct{
             ..Default::default()
         })
         .await.unwrap();
-
-        let mut search_output: Vec<HashMap<String, f64>> = Vec::new();
-        let mut result_hashmap: HashMap<String, f64> = HashMap::new();
         
         let output_hashmap : HashMap<String, f64> = search_result_response.result.iter().map(|x| {
             let mut without_quotes = x.payload["document_for_embeddings"].to_string().trim_matches('"')
@@ -140,20 +137,6 @@ impl BaseVectorDBTrait for QdrantDBStruct{
         }).collect();
 
         return output_hashmap;
-
-        // for search_result_idx in  0..search_result_response.result.len(){
-            
-        //     result_hashmap.insert(search_result_response.result[search_result_idx].payload["document_for_embeddings"].to_string(), search_result_response.result[search_result_idx].score.into());
-        //     // search_output.push(result_hashmap);
-
-        //     // let col_data_type = self.df.column(col).unwrap().dtype().to_string();
-        //     // return (search_result_response.result[search_result_idx].payload["document_for_embeddings"].to_string(), search_result_response.result[search_result_idx].score.into());
-        // }
-        // log::info!("Search output is {:?}", search_output);
-
-        // log::info!("Result hashmap is {:?}", result_hashmap);
-        // // return search_output;
-        // return result_hashmap.clone();
     }
 }
 
