@@ -21,6 +21,7 @@ pub mod llm_mod {
 pub mod structured_data {
     pub mod ccm;
     pub mod cdom;
+    pub mod sqm;
 }
 
 pub mod crate_utils;

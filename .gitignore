@@ -5,3 +5,6 @@ local_cache/
 
 # ignoring csv lock
 .~lock.auto_sales_test.csv#
+
+# ignoring qdrant_storage
+qdrant_storage/

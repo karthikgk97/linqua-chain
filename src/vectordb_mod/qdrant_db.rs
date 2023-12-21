@@ -5,9 +5,8 @@ use async_trait::async_trait;
 use qdrant_client::prelude::*;
 use qdrant_client::qdrant::vectors_config::Config;
 use qdrant_client::qdrant::{
-    PointId, PointStruct, Condition, CreateCollection, Filter, SearchPoints, VectorParams, VectorsConfig
+    PointStruct, Condition, CreateCollection, Filter, SearchPoints, VectorParams, VectorsConfig
 };
-use maplit::hashmap;
 use uuid::Uuid;
 // use sha256::{digest}
 
@@ -108,7 +107,7 @@ impl BaseVectorDBTrait for QdrantDBStruct{
         log::debug!("Qdrant's Time taken:: for adding stuff to collection {} is {}", collection_name, add_to_collection_response.time);
     }
 
-    async fn search_collection(&self, collection_name: &str, search_query: &str, search_filter: Option<HashMap<&str, &str>>, search_limit: u64) -> Vec<HashMap<String, f64>>{
+    async fn search_collection(&self, collection_name: &str, search_query: &str, search_filter: Option<HashMap<&str, &str>>, search_limit: u64) -> HashMap<String, f64>{
         
         let vec_to_search = &self.embeddings_model.embed_stuff(vec![search_query.to_string()])[0];
 
@@ -126,15 +125,18 @@ impl BaseVectorDBTrait for QdrantDBStruct{
             ..Default::default()
         })
         .await.unwrap();
+        
+        let output_hashmap : HashMap<String, f64> = search_result_response.result.iter().map(|x| {
+            let mut without_quotes = x.payload["document_for_embeddings"].to_string().trim_matches('"')
+            .replace(r#"\\""#, "\\")
+            .replace(r#"\"#, "")
+            .to_string();
+            without_quotes = without_quotes + "\"";
+            log::info!("Inside modified is {}", without_quotes );
+            return (without_quotes, x.score.into());
+        }).collect();
 
-        let mut search_output: Vec<HashMap<String, f64>> = Vec::new();
-        for search_result_idx in  0..search_result_response.result.len(){
-            let mut result_hashmap: HashMap<String, f64> = HashMap::new();
-            result_hashmap.insert(search_result_response.result[search_result_idx].payload["document_for_embeddings"].to_string(), search_result_response.result[search_result_idx].score.into());
-            search_output.push(result_hashmap);
-        }
-        log::info!("Search output is {:?}", search_output);
-        return search_output;
+        return output_hashmap;
     }
 }
 
