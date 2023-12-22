@@ -16,6 +16,7 @@ pub mod rdbms_mod {
 pub mod llm_mod {
     pub mod base_llm;
     pub mod ollama_llm;
+    pub mod openai_llm;
 }
 
 pub mod structured_data {
