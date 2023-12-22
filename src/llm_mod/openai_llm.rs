@@ -7,6 +7,7 @@ pub struct OpenAILLMStruct{
     messages: Vec<HashMap<String, String>>,
     temperature: f32,
     top_p: f32,
+    // top_k: u32,
     max_output_length: i32,
     track_history: bool
 }
@@ -22,6 +23,7 @@ impl OpenAILLMStruct{
             messages: Vec::new(),
             temperature: 0.7,
             top_p: 0.95,
+            // top_k: 0.9,
             max_output_length: 256,
             track_history: default_track_history
         };
@@ -36,6 +38,12 @@ impl OpenAILLMStruct{
         log::info!("Setting top_p as {}", new_top_p);
         self.top_p = new_top_p;
     }
+
+    // pub fn set_top_k(&mut self, new_top_k: f32){
+    //     log::info!("Setting top_p as {}", new_top_p);
+    //     self.top_k = new_top_k;
+    // }
+
 
     pub fn set_max_output_length(&mut self, new_max_output_length: i32){
         log::info!("Setting max output length as {}", new_max_output_length);
@@ -61,6 +69,11 @@ impl OpenAILLMStruct{
                 ("content".to_string(), system_prompt_message.to_string())
             ]
         ));
+    }
+
+    pub fn clear_chat(&mut self){
+        log::info!("Clearing messages");
+        self.messages.clear();
     }
 
     pub async fn chat(&mut self, user_prompt: &str) -> String{

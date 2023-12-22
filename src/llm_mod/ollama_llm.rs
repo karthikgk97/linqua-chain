@@ -21,7 +21,9 @@ pub struct OllamaLLMStruct{
 #[async_trait]
 impl BaseLLMTrait for OllamaLLMStruct{
 
-    fn new(model_endpoint: &str, model_name: Option<&str>, track_history: bool) -> Self{
+    fn new(model_name: Option<&str>, track_history: bool) -> Self{
+
+        let model_endpoint = "http://localhost";
 
         let default_model_name = "llama2";
 

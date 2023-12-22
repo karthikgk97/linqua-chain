@@ -3,7 +3,7 @@ use async_trait::async_trait;
 
 #[async_trait]
 pub trait BaseLLMTrait {
-    fn new(model_endpoint: &str, model_name: Option<&str>, track_history: bool) -> Self;
+    fn new(model_name: Option<&str>, track_history: bool) -> Self;
 
     fn set_system_prompt(&mut self, system_prompt_message: &str);
     fn set_temperature(&mut self, new_temperature: f32);
