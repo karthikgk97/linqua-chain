@@ -1,9 +1,9 @@
-// use env_logger::Builder;
+use env_logger::Builder;
 // use std::collections::HashMap;
 // use maplit::hashmap;
 
-// use linqua_chain::rdbms_mod::base_rdbms::BaseRDBMSTrait;
-// use linqua_chain::rdbms_mod::polars_data::PolarsDataStruct;
+use linqua_chain::rdbms_mod::base_rdbms::BaseRDBMSTrait;
+use linqua_chain::rdbms_mod::polars_data::PolarsDataStruct;
 // use linqua_chain::llm_mod::base_llm::BaseLLMTrait;
 // use linqua_chain::structured_data::ccm::CCMStruct;
 // use linqua_chain::structured_data::cdom::CDOMStruct;
@@ -11,7 +11,20 @@
 // use linqua_chain::vectordb_mod::qdrant_db::QdrantDBStruct;
 
 pub fn main(){
-    println!("Hello world");
+    Builder::new().filter_level(log::LevelFilter::Info).init();
+    println!("Here");
+    let pds = PolarsDataStruct::new("./auto_sales_test.csv");
+    let query = "SELECT SALES FROM df
+    
+    WHERE CUSTOMERNAME = 'Corrida Auto Replicas, Ltd'
+    ";
+
+    // let query = "SELECT SALES
+    // FROM df 
+    // WHERE ADDRESSLINE1 = 'Monitor Money Building, 815 Pacific Hwy' 
+    // AND CUSTOMERNAME = 'Corrida Auto Replicas, Ltd'";
+    let _ = pds.execute_sql_query(query);
+    // println!("Hello world");
 }
 // #[tokio::main]
 // async fn main() {

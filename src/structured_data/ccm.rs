@@ -3,11 +3,8 @@ use crate::llm_mod::ollama_llm::OllamaLLMStruct;
 use crate::llm_mod::openai_llm::OpenAILLMStruct;
 use serde_yaml::Value;
 // use async_trait::async_trait;
+use crate::llm_mod::base_llm::ModelType;
 
-pub enum ModelType {
-    OpenAI,
-    Ollama
-}
 
 enum LanguageModelVariant{
     OpenAI(OpenAILLMStruct),
@@ -31,24 +28,11 @@ impl CCMStruct{
         let llm_instance = match model_name {
             ModelType::OpenAI => LanguageModelVariant::OpenAI(OpenAILLMStruct::new(Some("gpt-3.5-turbo"))),
             ModelType::Ollama => LanguageModelVariant::Ollama(OllamaLLMStruct::new(Some("llama"), track_history)),
-            // Add more cases as needed
         };
 
         return CCMStruct{
             llm_instance
         };
-
-        // if model_name == "openai"{
-        //     return CCMStruct{
-        //         llm_instance: LanguageModelVariant::OpenAI(OpenAILLMStruct::new(model_name))
-        //     };
-        // }
-        // else{
-        //     let model_endpoint = "http://localhost";
-        //     return CCMStruct{
-        //         llm_instance: LanguageModelVariant::Ollama(OllamaLLMStruct::new(model_name, track_history))
-        //     };
-    // }
     }
 
     pub fn set_system_prompt(&mut self, system_prompt_message: &str) {
@@ -57,7 +41,6 @@ impl CCMStruct{
             LanguageModelVariant::OpenAI(openai_llm) => openai_llm.set_custom_system_prompt(system_prompt_message),
             LanguageModelVariant::Ollama(_) => {
                 log::info!("test");
-                // Handle Ollama case if needed
             }
     }
     }
@@ -111,12 +94,7 @@ impl CCMStruct{
                 return chat_response;
                 // Handle Ollama case if needed
             }
-        }
-        // let mut chat_response = self.llm_instance.chat(user_prompt).await;
-        // if self.model_name == "ollama"{
-        //     chat_response = chat_response.replace("[INST/LLM]", "");
-        // }
-        
+        }        
     }
 
     pub fn clear_chat(&mut self){
@@ -129,8 +107,8 @@ impl CCMStruct{
                 // let mut chat_response = "test";
                 // Handle Ollama case if needed
             }
+        }
     }
-}
 }
 
 impl CCMStruct{

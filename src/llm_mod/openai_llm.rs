@@ -131,17 +131,17 @@ impl OpenAILLMStruct{
                             let llm_response = &json_body["choices"][0]["message"]["content"];
                             log::info!("LLM response is {}", llm_response);
                             
+                            let modified_response = llm_response.as_str().unwrap().trim_matches('"').to_string();
                             if self.track_history{
-                                let modified_response = llm_response.as_str().unwrap().trim_matches('"').to_string();
                                 self.messages.push(HashMap::from(
                                     [
                                         ("role".to_string(), "assistant".to_string()),
-                                        ("content".to_string(), modified_response)
+                                        ("content".to_string(), modified_response.clone())
                                     ]
                                 ))
                             }
 
-                            return llm_response.to_string();
+                            return modified_response;
                         }
                         Err(err) => {
                             log::error!("Response Success. But Errored on Response body with error {}", err);

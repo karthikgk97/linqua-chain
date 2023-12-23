@@ -13,3 +13,8 @@ pub trait BaseLLMTrait {
     async fn chat(&mut self, user_prompt: &str) -> String;
     fn clear_chat(&mut self); 
 }
+
+pub enum ModelType {
+    OpenAI,
+    Ollama
+}

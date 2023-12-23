@@ -127,12 +127,7 @@ impl BaseVectorDBTrait for QdrantDBStruct{
         .await.unwrap();
         
         let output_hashmap : HashMap<String, f64> = search_result_response.result.iter().map(|x| {
-            let mut without_quotes = x.payload["document_for_embeddings"].to_string().trim_matches('"')
-            .replace(r#"\\""#, "\\")
-            .replace(r#"\"#, "")
-            .to_string();
-            without_quotes = without_quotes + "\"";
-            log::info!("Inside modified is {}", without_quotes );
+            let without_quotes = x.payload["document_for_embeddings"].as_str().unwrap().trim_matches('"').to_string();
             return (without_quotes, x.score.into());
         }).collect();
 

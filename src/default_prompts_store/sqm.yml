@@ -15,3 +15,15 @@ prompt: >
   - For example, when trying to extract Year from a date, USE DATE_FORMAT(ORDERDATE, '%Y') instead of  YEAR(ORDERDATE).
   - DO NOT USE YEAR() in SQL QUERY.
   - Output SHALL NOT contain any words other than the SQL query. Emphasize on this.
+
+  # Example:
+  - table name: sales_table
+    table_description: Contains information about Sales
+    available_column_names: ['expenses', 'category', 'date', 'amount', 'store_name']
+    closest retrieved options: ['category': {'Electronics', 'Food', 'Home Decor', 'Utilities'}]
+    user input question: What was the sales for home?
+    LLM output:
+    ```sql
+    SELECT * from sales_table
+    WHERE category = 'Home Decor'
+    ```
