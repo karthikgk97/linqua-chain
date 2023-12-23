@@ -14,9 +14,10 @@ pub fn main(){
     Builder::new().filter_level(log::LevelFilter::Info).init();
     println!("Here");
     let pds = PolarsDataStruct::new("./auto_sales_test.csv");
-    let query = "SELECT SALES FROM df
-    
-    WHERE CUSTOMERNAME = 'Corrida Auto Replicas, Ltd'
+    let query = "SELECT CAST(SUBSTRING(ORDERDATE, 7, 4) AS INT) AS YEAR, CUSTOMERNAME, SUM(SALES) AS TOTAL_SALES
+    FROM df
+    WHERE CUSTOMERNAME IN ('Corrida Auto Replicas, Ltd', 'Mini Gifts Distributors Ltd.')
+    GROUP BY YEAR, CUSTOMERNAME    
     ";
 
     // let query = "SELECT SALES

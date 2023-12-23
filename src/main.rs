@@ -43,7 +43,7 @@ async fn main() {
     
     ccm.set_system_prompt(&default_system_message);
 
-    let user_input_question = "Total Sale price for customer Corrida";
+    let user_input_question = "Sale price for both customers Corrida and Mini Gifts. give it per customer";
 
     let chat_op = ccm.chat(user_input_question).await;
     let ccm_chat_op_list = ccm.string_to_list(chat_op);
