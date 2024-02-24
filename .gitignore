@@ -2,9 +2,13 @@
 
 # ignoring fast embed cache
 local_cache/
+.fastembed_cache/
 
 # ignoring csv lock
 .~lock.auto_sales_test.csv#
+# ignoring dummy data
+dummy_data.csv
+auto_sales_test.csv
 
 # ignoring qdrant_storage
 qdrant_storage/
