@@ -21,6 +21,7 @@ impl FastEmbedStruct {
     }
 
     pub fn new(embedding_model_name: String)  -> Self{
+        log::info!("Initiating FastEmbed Struct with embedding model name {}", &embedding_model_name);
         // setting the embedding model object
         let emb_model: TextEmbedding = TextEmbedding::try_new(InitOptions {
             model_name: Self::get_embedding_model_from_string(&embedding_model_name),
@@ -32,15 +33,17 @@ impl FastEmbedStruct {
         let mut model_dimension: usize = 0;
         available_embedding_models.iter().for_each(|x| {
             if x.model == Self::get_embedding_model_from_string(&embedding_model_name) {
+                log::debug!("Found the embedding model from available models. Retrieving its dimension");
                 model_dimension = x.dim;
             }
         }
         );
+        
 
         let emb_model_config: EmbeddingConfig = EmbeddingConfig{
             embedding_model_object: EmbeddingModelObject::FastEmbed(emb_model),
             embedding_model_type: String::from("FastEmbed"),
-            embedding_model_name: embedding_model_name,
+            embedding_model_name,
             embedding_model_dimension: model_dimension,
             embedding_distance_type: EmbeddingDistanceType::Cosine
         };
