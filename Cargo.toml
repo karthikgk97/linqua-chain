@@ -29,3 +29,4 @@ serde_yaml = "0.9.27"
 uuid = {version = "1.6.1", features = ["v5", "fast-rng"]}
 sha256 = "1.4.0"
 reqwest = "0.11.23"
+openai-api-rs = "4.0.7"

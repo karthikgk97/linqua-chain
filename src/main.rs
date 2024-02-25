@@ -1,8 +1,11 @@
 use env_logger::Builder;
 use linqua_chain::embeddings_mod::fast_embed::FastEmbedStruct;
 use linqua_chain::core::embedding_config::EmbeddingModelObject;
+use linqua_chain::core::llm_config::{LLMConfig, OpenAILLMModels};
+use linqua_chain::llm_mod::openai::OpenAILLMConfig;
 
-fn main(){
+#[tokio::main]
+async fn main(){
     Builder::new().filter_level(log::LevelFilter::Info).init(); 
     log::info!("Main Function");
 
@@ -25,5 +28,21 @@ fn main(){
             }
         },
     }
+
+    let openai_config = OpenAILLMConfig::get_llm_config(OpenAILLMModels::Gpt35_4k, 0.7, 0.95, 512);
+
+    let mut chat_history = Vec::new();
+    let chat_response_result = OpenAILLMConfig::chat(openai_config, &mut chat_history, String::from("What is Valorant?")).await;
+
+    match chat_response_result {
+    Ok(chat_response) => {
+        println!("Chat resp is {:?}", chat_response.output_response);
+        // Access other fields if needed: chat_response.input_tokens, chat_response.output_tokens, chat_response.total_tokens
+    }
+    Err(error) => {
+        // Handle the error case
+        println!("Error: {:?}", error);
+    }
+}
 }
 
