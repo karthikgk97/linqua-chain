@@ -19,6 +19,4 @@ pub struct EmbeddingConfig {
     pub embedding_model_type: String,
     pub embedding_model_name: String,
     pub embedding_model_dimension: usize,
-    pub embedding_distance_type: EmbeddingDistanceType 
 }
-
