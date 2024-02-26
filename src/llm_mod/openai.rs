@@ -3,6 +3,7 @@
 use std::collections::HashMap;
 use serde_json::json;
 use serde_json::Value;
+use tokio::time::Instant;
 
 use crate::core::llm_config::{LLMConfig, LLMModelName, LLMOutputResponse, OpenAILLMModels};
 
@@ -41,6 +42,8 @@ impl OpenAILLMConfig {
     }
 
     pub async fn chat(llm_config: LLMConfig, chat_history: &mut Vec<HashMap<String, String>>, user_query: String) -> Result<LLMOutputResponse, OpenAILLMError>{
+        let total_function_time = std::time::Instant::now();
+
         log::info!("Making Chat Request for User Query {}", user_query);
         
         let model_name = match llm_config.model_name {
@@ -79,11 +82,13 @@ impl OpenAILLMConfig {
         });
         
         log::info!("Making request for query {}", user_query);
+        let request_start_time = std::time::Instant::now();
         let response = client.post(url)
         .headers(headers)
         .body(serde_json::to_string(&payload).expect("Failed to serialize JSON"))
         .send()
         .await;
+
 
         match response{
             Ok(response) => {
@@ -101,7 +106,8 @@ impl OpenAILLMConfig {
 
                             let llm_response = &json_body["choices"][0]["message"]["content"];
                             log::info!("LLM response is {}", llm_response);
-
+                            log::info!("Elapsed time for making Request {:.2?}", request_start_time.elapsed());
+                            log::info!("Total Time taken for making chat call: {:.2?}", total_function_time.elapsed());
                             Ok(LLMOutputResponse {
                                     output_response: llm_response.to_string(),
                                     input_tokens: 1,
