@@ -6,14 +6,6 @@ pub enum EmbeddingModelObject{
     FastEmbed(TextEmbedding)
 }
 
-
-pub enum EmbeddingDistanceType {
-    Euclidean,
-    Dot,
-    Cosine
-}
-
-
 pub struct EmbeddingConfig {
     pub embedding_model_object: EmbeddingModelObject,
     pub embedding_model_type: String,
