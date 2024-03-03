@@ -125,7 +125,7 @@ impl OpenAILLMConfig {
                                 total_function_time.elapsed()
                             );
                             Ok(LLMOutputResponse {
-                                output_response: llm_response.to_string(),
+                                output_response: llm_response.to_string().trim_matches('"').to_string(),
                                 input_tokens: 1,
                                 output_tokens: 1,
                                 total_tokens: 1,

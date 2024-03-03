@@ -1,5 +1,8 @@
 /target
 
+#ignoring venv
+venv/
+
 # ignoring fast embed cache
 local_cache/
 .fastembed_cache/
